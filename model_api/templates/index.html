@@ -108,27 +108,35 @@ async function predict() {
         TotalCharges: parseFloat(document.getElementById("total").value)
     };
 
-    let apiUrl = window.location.origin + "/predict";
+    const apiUrl = window.location.origin + "/predict";
 
-    const res = await fetch(apiUrl, {
+    const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
 
-    const result = await res.json();
+    const result = await response.json();
     const box = document.getElementById("result");
-
     box.style.display = "block";
 
-    if (result.churn === 1) {
-        box.innerHTML = "🚨 This customer is likely to churn!";
-        box.style.background = "#ffdddd";
-        box.style.color = "#cc0000";
+    if (result.churn_probability !== undefined) {
+        const prob = result.churn_probability;
+        const percent = (prob * 100).toFixed(2);
+
+        if (prob > 0.5) {
+            box.innerHTML = `🚨 High Churn Risk: <b>${percent}%</b>`;
+            box.style.background = "#ffdddd";
+            box.style.color = "#cc0000";
+        } else {
+            box.innerHTML = `✅ Low Churn Risk: <b>${percent}%</b>`;
+            box.style.background = "#ddffdd";
+            box.style.color = "#008800";
+        }
     } else {
-        box.innerHTML = "✅ This customer is NOT likely to churn.";
-        box.style.background = "#ddffdd";
-        box.style.color = "#008800";
+        box.innerHTML = "⚠️ Error: Could not calculate prediction.";
+        box.style.background = "#fff3cd";
+        box.style.color = "#856404";
     }
 }
 </script>
